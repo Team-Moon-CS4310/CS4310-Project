@@ -1,0 +1,14 @@
+run: build
+	./Server.exe
+
+Server.exe: 
+	build
+
+build: src/server.cpp
+	g++ -std=c++17 src/server.cpp -pthread -o Server.exe
+
+clean:
+	rm Server.exe
+
+debug: build
+	gdb Server.exe
