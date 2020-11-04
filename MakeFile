@@ -1,14 +1,29 @@
-run: build
-	./Server.exe
+CC = g++
+CFLAGS = -std=c++17 -g -Wall
+BIN = binaries
 
-Server.exe: 
-	build
+all: build
+	./$(BIN)/Server.exe
 
-build: src/server.cpp
-	g++ -std=c++17 src/server.cpp -pthread -o Server.exe
+# Make /binaries folder if doesn't exist.
+$(BIN):
+	if [ ! -d "/$(BIN)" ]; then mkdir $(BIN); fi
+
+build: $(BIN) | $(BIN)/server.o $(BIN)/requesthandler.o
+	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/requesthandler.o -o $(BIN)/Server.exe
+
+$(BIN)/server.o: src/server.cpp
+	$(CC) $(CFLAGS) -c src/server.cpp -o $(BIN)/server.o
+
+$(BIN)/requesthandler.o: src/requesthandler.hpp src/requesthandler.cpp
+	$(CC) $(CFLAGS) -c src/requesthandler.cpp -o $(BIN)/requesthandler.o
 
 clean:
-	rm Server.exe
+	rm $(BIN)/server.o
+	rm $(BIN)/requesthandler.o
+	rm $(BIN)/Server.exe
+	rmdir $(BIN)
 
 debug: build
 	gdb Server.exe
+
