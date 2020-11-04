@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <iostream>
 #include <string>
@@ -60,24 +61,24 @@ int main(int argc, char const *argv[]) {
 		std::cout << "Listening on socket successfully!" << std::endl;
 	}
 
-	
-	// I don't know why this doesn't work. It hands out the string correctly without the while loop and 'continue'
-	// TODO research problem.
+	// TODO look at select()
 	while (true) {
 		pthread_t clientThread;
-		std::cout << "looping" << std::endl;
-		sockaddr_storage clientSocket;			 // make a new socket for the incoming client.
+		sockaddr_storage clientSocket;					 // make a new socket for the incoming client.
 		socklen_t clientAddrSize = sizeof clientSocket;	 // get the address's length.
 		pthreadargs testargs;
+		memset(&testargs, 0, sizeof testargs);
+		std::cout << "Waiting for Client." << std::endl;
 		testargs.socketDescriptor = accept(socketResult, (sockaddr *)&clientSocket, &clientAddrSize);
 		// Returns a new socket descriptor that links to this newly accepted connection.
 		if (testargs.socketDescriptor == -1) {
 			perror("acceptResult");
 			continue;
 		}
-		std::cout << testargs.socketDescriptor << std::endl;
+		std::cout << "After: " << testargs.socketDescriptor << std::endl;
 
 		pthread_create(&clientThread, NULL, handleClient, &testargs);
+
 		pthread_join(clientThread, NULL);
 	}
 
@@ -87,12 +88,16 @@ int main(int argc, char const *argv[]) {
 
 void *handleClient(void *socketDescriptor) {
 	pthreadargs *testargs = (pthreadargs *)socketDescriptor;
-	std::cout << testargs->socketDescriptor << std::endl;
+	std::cout << "Inside: " << testargs->socketDescriptor << std::endl;
+	
 	auto testmsg = "testmsg";
 	int sendResult = send(testargs->socketDescriptor, testmsg, strlen(testmsg), 0);
 	if (sendResult == -1) {
 		perror("sendResult");
 	}
 
+	std::cout << "Closing" << std::endl;
+	close(testargs->socketDescriptor);
+	std::cout << "Closed" << std::endl;
 	return NULL;
 }
