@@ -1,9 +1,20 @@
 #include "requesthandler.hpp"
 
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <fstream>
+#include <iostream>
 #include <regex>
 using namespace std;
 
+/*
+Parses HTTP request string, convering it into a RequestInfo struct.
+See https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9 for layout of HTTP request format.
+*/
 RequestInfo parseRequest(string req) {
+	// Parse string similar to the terminal we made. Assignment 4.
 	regex reg("(\\S+)");
 	sregex_iterator next(req.begin(), req.end(), reg);
 
@@ -12,6 +23,7 @@ RequestInfo parseRequest(string req) {
 	sregex_iterator end;
 	string match = smatch.str();
 
+	// Lambda function can modify variables in the scope its declared.
 	auto nextMatch = [&](int skip) {
 		for (int i = 0; i <= skip; i++) {
 			next++;
@@ -38,4 +50,73 @@ RequestInfo parseRequest(string req) {
 	result.host = match;
 
 	return result;
+}
+
+// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages for response.
+// Want to return base html page.
+int getRequest(RequestInfo info) {
+	ResponseInfo reply;
+	cout << info.path << endl;
+
+	if (info.path.compare("/") == 0) {
+		// Set reply status.
+		reply.status = OK;
+		// Convert the index.html resource to a stringstream
+		ifstream f("res/index.html");
+		stringstream buff;
+		buff << f.rdbuf();
+		// Put the index.html file into the response body.
+		reply.body = buff.str();
+		reply.socketDescriptor = info.socketDescriptor;
+		// Pass the response info to be built and sent.
+		sendResponse(reply);
+	} else if (info.path.compare("/favicon.ico") == 0){
+		reply.status = NOT_FOUND;
+		reply.socketDescriptor = info.socketDescriptor;
+		sendResponse(reply);
+	}
+}
+
+int postRequest(RequestInfo info) {
+}
+
+int deleteRequest(RequestInfo info) {
+}
+
+int putRequest(RequestInfo info) {
+}
+
+string buildResponse(ResponseInfo info) {
+	string result = "";
+	result.append("HTTP/1.1 ");
+
+	switch (info.status) {
+	case OK:
+		result.append("200 OK");
+		break;
+	case NOT_FOUND:
+		result.append("404 Not Found"); // No clue why this isn't working properly...
+		break;
+	case INTERNAL_ERR:
+		result.append("500 Internal Server Error");
+		break;
+	default:
+		// Because I can, that's why.
+		result.append("418 I'm a teapot");	// Short and stout.
+		break;
+	}
+	if (!info.body.empty())
+	{
+		result.append("\n\n");
+		result.append(info.body);
+	}
+
+	return result;
+}
+
+int sendResponse(ResponseInfo reply) {
+	string content = buildResponse(reply);
+	auto tosend = content.c_str();
+	cout << content << endl;
+	send(reply.socketDescriptor, tosend, strlen(tosend), 0);
 }

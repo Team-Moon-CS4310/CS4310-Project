@@ -1,5 +1,4 @@
 #include <netdb.h>
-#include <pthread.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -8,9 +7,7 @@
 
 #include <iostream>
 
-#include "requesthandler.hpp"
-
-int handleClient(int sD);
+#include "clienthandler.hpp"
 
 pthread_mutex_t m;
 
@@ -33,7 +30,7 @@ int main(int argc, char const *argv[]) {
 	}
 
 	// Now info points to a list of addrinfos with the given address and port.
-	// We can usually assume that the first element is correct, as there shouldn't (usually) be any existing 
+	// We can usually assume that the first element is correct, as there shouldn't (usually) be any existing
 	// addresses with the same port being used. LOOKAT
 
 	// Makes a socket that can be dealt with using the file descriptor returned.
@@ -60,7 +57,7 @@ int main(int argc, char const *argv[]) {
 		std::cout << "Bound socket successfully!" << std::endl;
 	}
 
-	// Starts listening on port/address given for connections. 
+	// Starts listening on port/address given for connections.
 	// Places them in a queue, the size of which is the 2nd argument here.
 	int listenResult = listen(socketResult, 2);
 	// Handle error printing.
@@ -73,7 +70,6 @@ int main(int argc, char const *argv[]) {
 	// TODO look at select()
 	// I get 2 connections because firefox requests the favcon.ico immediently.
 	while (true) {
-
 		// Make a new socket for the incoming client. I think?
 		sockaddr_storage clientSocket;
 
@@ -95,7 +91,6 @@ int main(int argc, char const *argv[]) {
 
 		// Duplicates the current process.
 		if (fork() == 0) {
-
 			// Listening socket is useless to this child.
 			close(socketResult);
 
@@ -117,32 +112,5 @@ int main(int argc, char const *argv[]) {
 
 	// Might want to do this earlier. TODO LOOKAT.
 	freeaddrinfo(info);
-	return 0;
-}
-
-int handleClient(int sD) {
-	std::cout << "Inside: " << sD << std::endl;
-
-	auto testmsg = "testmsg";
-	int sendResult = send(sD, testmsg, strlen(testmsg), 0);
-	if (sendResult == -1) {
-		perror("sendResult");
-	}
-
-	char buffer[2000];
-	int received = recv(sD, buffer, sizeof(buffer), 0);
-	if (received == -1) {
-		perror("received");
-		std::cout << "ERROR RECEIVING!" << std::endl;
-	}
-
-	std::cout << buffer << std::endl;
-
-	std::string str(buffer);
-	RequestInfo info = parseRequest(str);
-
-	std::cout << info.host << std::endl;
-
-	std::cout << "done" << std::endl;
 	return 0;
 }

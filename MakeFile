@@ -9,8 +9,8 @@ all: build
 $(BIN):
 	if [ ! -d "/$(BIN)" ]; then mkdir $(BIN); fi
 
-build: $(BIN) | $(BIN)/server.o $(BIN)/requesthandler.o
-	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/requesthandler.o -o $(BIN)/Server.exe
+build: $(BIN) | $(BIN)/server.o $(BIN)/requesthandler.o $(BIN)/clienthandler.o
+	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/requesthandler.o $(BIN)/clienthandler.o -o $(BIN)/Server.exe
 
 $(BIN)/server.o: src/server.cpp
 	$(CC) $(CFLAGS) -c src/server.cpp -o $(BIN)/server.o
@@ -18,9 +18,13 @@ $(BIN)/server.o: src/server.cpp
 $(BIN)/requesthandler.o: src/requesthandler.hpp src/requesthandler.cpp
 	$(CC) $(CFLAGS) -c src/requesthandler.cpp -o $(BIN)/requesthandler.o
 
+$(BIN)/clienthandler.o: src/clienthandler.hpp src/clienthandler.cpp
+	$(CC) $(CFLAGS) -c src/clienthandler.cpp -o $(BIN)/clienthandler.o
+
 clean:
 	rm $(BIN)/server.o
 	rm $(BIN)/requesthandler.o
+	rm $(BIN)/clienthandler.o
 	rm $(BIN)/Server.exe
 	rmdir $(BIN)
 
