@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "requesthelper.hpp"
+#include "requesthandler.hpp"
 using namespace std;
 
 /*
@@ -14,7 +14,7 @@ Order of operations we want:
 2. Send request (get, post, delete, or put) to it's appropriate handler (get, post, delete, or put)
 3. That handler then takes the path and then passes it to its appropriate method to handle that specific request.
 */
-
+// TODO handle 'Connection: keep-alive'
 int handleClient(int sD) {
 	cout << "Inside: " << sD << endl;
 
@@ -25,13 +25,12 @@ int handleClient(int sD) {
 		cout << "ERROR RECEIVING!" << endl;
 	}
 
-	cout << received << endl;
+	cerr << received << "\n";
 
-	cout << "\033[34m" << buffer << "\033[0m" << endl;
+	cerr << "\033[34m" << buffer << "\033[0m\n";
 
 	string str(buffer);
-	RequestInfo info = parseRequest(str);
-	info.socketDescriptor = sD;
+	RequestInfo info(str, sD);
 
 	switch (info.method) {
 	case GET:
@@ -52,6 +51,6 @@ int handleClient(int sD) {
 		break;
 	}
 
-	cout << "done" << endl;
+	cerr << "done\n";
 	return 0;
 }

@@ -1,4 +1,4 @@
-#include "requesthelper.hpp"
+#include "responsehelper.hpp"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -8,49 +8,6 @@
 #include <iostream>
 #include <regex>
 using namespace std;
-
-/*
-Parses HTTP request string, convering it into a RequestInfo struct.
-See https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9 for layout of HTTP request format.
-*/
-RequestInfo parseRequest(string req) {
-	// Parse string similar to the terminal we made. Assignment 4.
-	regex reg("(\\S+)");
-	sregex_iterator next(req.begin(), req.end(), reg);
-
-	RequestInfo result;
-	smatch smatch = *next;
-	sregex_iterator end;
-	string match = smatch.str();
-
-	// Lambda function can modify variables in the scope its declared.
-	auto nextMatch = [&](int skip) {
-		for (int i = 0; i <= skip; i++) {
-			next++;
-		}
-		smatch = *next;
-		match = smatch.str();
-	};
-
-	// Fill the request method.
-	if (match.compare("GET") == 0) {
-		result.method = GET;
-	} else if (match.compare("POST") == 0) {
-		result.method = POST;
-	} else if (match.compare("DELETE") == 0) {
-		result.method = DELETE;
-	} else if (match.compare("PUT") == 0) {
-		result.method = PUT;
-	}
-
-	nextMatch(0);
-	result.path = match;
-
-	nextMatch(2);
-	result.host = match;
-
-	return result;
-}
 
 string buildResponse(ResponseInfo info) {
 	string result = "";

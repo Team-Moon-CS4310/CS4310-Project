@@ -4,13 +4,20 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
-// LOOKAT jank. requesthandler.hpp included through requesthelper.hpp.
-#include "requesthelper.hpp"
+
+#include "requestinfo.hpp"
+#include "responsehelper.hpp"
 
 using namespace std;
 
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages for response.
 // Want to return base html page.
+/**
+ * @brief Handles GET requests.
+ * 
+ * @param info 
+ * @return int 
+ */
 int getRequest(RequestInfo info) {
 	ResponseInfo reply;
 	cout << info.path << endl;
