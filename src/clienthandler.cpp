@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "requesthandler.hpp"
+#include "requesthelper.hpp"
 using namespace std;
 
 /*
@@ -25,37 +25,32 @@ int handleClient(int sD) {
 		cout << "ERROR RECEIVING!" << endl;
 	}
 
+	cout << received << endl;
+
 	cout << "\033[34m" << buffer << "\033[0m" << endl;
 
 	string str(buffer);
 	RequestInfo info = parseRequest(str);
 	info.socketDescriptor = sD;
 
-	// auto testmsg = "testmsg";
-	// int sendResult = send(sD, testmsg, strlen(testmsg), 0);
-	// if (sendResult == -1) {
-	// 	perror("sendResult");
-	// }
-   
-   switch (info.method)
-   {
-   case GET:
-	   getRequest(info);
-	   break;
-   case POST:
-	   postRequest(info);
-	   break;
-   case DELETE:
-	   deleteRequest(info);
-	   break;
-   case PUT:
-	   putRequest(info);
-	   break;
-   default:
-	   auto errmsg = "Request not cannot be handled.";
-	   send(sD, errmsg, strlen(errmsg), 0);
-	   break;
-   }
+	switch (info.method) {
+	case GET:
+		getRequest(info);
+		break;
+	case POST:
+		postRequest(info);
+		break;
+	case DELETE:
+		deleteRequest(info);
+		break;
+	case PUT:
+		putRequest(info);
+		break;
+	default:
+		auto errmsg = "Request not cannot be handled.";
+		send(sD, errmsg, strlen(errmsg), 0);
+		break;
+	}
 
 	cout << "done" << endl;
 	return 0;

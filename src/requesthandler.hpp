@@ -1,16 +1,16 @@
 #include <string>
 
+enum HttpStatus {
+	OK,
+	NOT_FOUND,
+	INTERNAL_ERR
+};
+
 enum RequestMethod {
 	GET,
 	POST,
 	DELETE,
 	PUT
-};
-
-enum HttpStatus {
-	OK,
-	NOT_FOUND,
-	INTERNAL_ERR
 };
 
 //TODO add the others?
@@ -32,8 +32,6 @@ struct ResponseInfo {
 	int socketDescriptor;
 };
 
-RequestInfo parseRequest(std::string req);
-
 int getRequest(RequestInfo info);
 
 int postRequest(RequestInfo info);
@@ -41,7 +39,3 @@ int postRequest(RequestInfo info);
 int deleteRequest(RequestInfo info);
 
 int putRequest(RequestInfo info);
-
-std::string buildResponse(ResponseInfo info);
-
-int sendResponse(ResponseInfo info);

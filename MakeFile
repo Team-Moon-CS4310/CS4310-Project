@@ -9,22 +9,26 @@ all: build
 $(BIN):
 	if [ ! -d "/$(BIN)" ]; then mkdir $(BIN); fi
 
-build: $(BIN) | $(BIN)/server.o $(BIN)/requesthandler.o $(BIN)/clienthandler.o
-	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/requesthandler.o $(BIN)/clienthandler.o -o $(BIN)/Server.exe
+build: $(BIN) | $(BIN)/server.o $(BIN)/requesthelper.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o
+	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/requesthelper.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o -o $(BIN)/Server.exe
 
 $(BIN)/server.o: src/server.cpp
 	$(CC) $(CFLAGS) -c src/server.cpp -o $(BIN)/server.o
 
-$(BIN)/requesthandler.o: src/requesthandler.hpp src/requesthandler.cpp
-	$(CC) $(CFLAGS) -c src/requesthandler.cpp -o $(BIN)/requesthandler.o
+$(BIN)/requesthelper.o: src/requesthandler.hpp src/requesthelper.hpp src/requesthelper.cpp
+	$(CC) $(CFLAGS) -c src/requesthelper.cpp -o $(BIN)/requesthelper.o
 
 $(BIN)/clienthandler.o: src/clienthandler.hpp src/clienthandler.cpp
 	$(CC) $(CFLAGS) -c src/clienthandler.cpp -o $(BIN)/clienthandler.o
 
+$(BIN)/requesthandler.o: src/requesthandler.hpp src/requesthandler.cpp
+	$(CC) $(CFLAGS) -c src/requesthandler.cpp -o $(BIN)/requesthandler.o
+
 clean:
 	rm $(BIN)/server.o
-	rm $(BIN)/requesthandler.o
+	rm $(BIN)/requesthelper.o
 	rm $(BIN)/clienthandler.o
+	rm $(BIN)/requesthandler.o
 	rm $(BIN)/Server.exe
 	rmdir $(BIN)
 
