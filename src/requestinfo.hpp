@@ -9,6 +9,7 @@ enum RequestMethod {
 
 //TODO add the others?
 // Thanks to https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9
+// I honestly don't know if this goes here or in the .cpp file.
 class RequestInfo {
 private:
 	std::string fullRequest;

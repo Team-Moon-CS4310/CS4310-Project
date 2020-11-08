@@ -15,11 +15,11 @@ using namespace std;
 /**
  * @brief Handles GET requests.
  * 
- * @param info 
- * @return int 
+ * @param info The client RequestInfo
+ * @return int whether the send response succeeded.
  */
 int getRequest(RequestInfo info) {
-	ResponseInfo reply;
+	ResponseInfo reply(info.socketDescriptor);
 	cout << info.path << endl;
 
 	if (info.path.compare("/") == 0) {
@@ -38,14 +38,32 @@ int getRequest(RequestInfo info) {
 	return 0;
 }
 
+/**
+ * @brief Handles POST requests.
+ * 
+ * @param info The client RequestInfo
+ * @return int whether the send response succeeded.
+ */
 int postRequest(RequestInfo info) {
 	return 0;
 }
 
+/**
+ * @brief Handles DELETE requests.
+ * 
+ * @param info The client RequestInfo
+ * @return int whether the send response succeeded.
+ */
 int deleteRequest(RequestInfo info) {
 	return 0;
 }
 
+/**
+ * @brief Handles PUT requests.
+ * 
+ * @param info The client RequestInfo
+ * @return int whether the send response succeeded.
+ */
 int putRequest(RequestInfo info) {
 	return 0;
 }

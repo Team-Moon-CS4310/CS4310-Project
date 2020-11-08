@@ -15,6 +15,12 @@ Order of operations we want:
 3. That handler then takes the path and then passes it to its appropriate method to handle that specific request.
 */
 // TODO handle 'Connection: keep-alive'
+/**
+ * @brief Handles the client right after the server accepts it.
+ * 
+ * @param sD The socket descriptor made when the client was accepted.
+ * @return int the status code.
+ */
 int handleClient(int sD) {
 	cout << "Inside: " << sD << endl;
 

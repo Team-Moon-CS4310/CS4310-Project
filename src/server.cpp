@@ -57,6 +57,9 @@ int main(int argc, char const *argv[]) {
 		std::cout << "Bound socket successfully!" << std::endl;
 	}
 
+	// Might not be best here. TODO LOOKAT
+	freeaddrinfo(info);
+
 	// Starts listening on port/address given for connections.
 	// Places them in a queue, the size of which is the 2nd argument here.
 	int listenResult = listen(socketResult, 2);
@@ -109,8 +112,5 @@ int main(int argc, char const *argv[]) {
 		//https://linux.die.net/man/2/waitpid for WNOHANG def.
 		waitpid(-1, NULL, WNOHANG);
 	}
-
-	// Might want to do this earlier. TODO LOOKAT.
-	freeaddrinfo(info);
 	return 0;
 }

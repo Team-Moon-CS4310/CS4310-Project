@@ -9,36 +9,14 @@
 #include <regex>
 using namespace std;
 
-string buildResponse(ResponseInfo info) {
-	string result = "";
-	result.append("HTTP/1.1 ");
-
-	switch (info.status) {
-	case OK:
-		result.append("200 OK");
-		break;
-	case NOT_FOUND:
-		result.append("404 Not Found"); // No clue why this isn't working properly...
-		break;
-	case INTERNAL_ERR:
-		result.append("500 Internal Server Error");
-		break;
-	default:
-		// Because I can, that's why.
-		result.append("418 I'm a teapot");	// Short and stout.
-		break;
-	}
-	if (!info.body.empty())
-	{
-		result.append("\n\n");
-		result.append(info.body);
-	}
-
-	return result;
-}
-
+/**
+ * @brief Sends the response to the client via the socketDescriptor in the ResponseInfo reply.
+ * 
+ * @param reply The full ResponseInfo.
+ * @return int whether the send succeeded or not.
+ */
 int sendResponse(ResponseInfo reply) {
-	string content = buildResponse(reply);
+	string content = reply.buildResponse();
 	auto tosend = content.c_str();
 	cout << content << endl;
 	int s = send(reply.socketDescriptor, tosend, strlen(tosend), 0);
@@ -48,6 +26,12 @@ int sendResponse(ResponseInfo reply) {
 	return 0;
 }
 
+/**
+ * @brief Converts the given file to a string by reading it from a stringstream.
+ * 
+ * @param filename the string filename.
+ * @return string the contents of the file.
+ */
 string fileToString(string filename) {
 	ifstream f(filename);
 	stringstream buff;

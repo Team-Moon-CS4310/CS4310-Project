@@ -8,6 +8,15 @@ using namespace std;
 Parses HTTP request string. TODO docs.
 See https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9 for layout of HTTP request format.
 */
+
+/**
+ * @brief Construct a new Request Info:: Request Info object
+ * 
+ * @param req The full string of recieved information from the client, including
+ * the full header and whatnot.
+ * See https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9
+ * @param sD Socket Descriptor 
+ */
 RequestInfo::RequestInfo(string req, int sD) {
 	socketDescriptor = sD;
 	// Parse string similar to the terminal we made. Assignment 4.
@@ -50,14 +59,15 @@ RequestInfo::RequestInfo(string req, int sD) {
 RequestInfo::~RequestInfo() {
 }
 
+// Chose to do this because we won't need 90% of the headers in the usual case unless we decide to implement them.
+/**
+ * @brief Finds the string following the inputted string name, starting 2 characters ahead.
+ * So, 'Content-Length' would find everything after 'Content-Length: '
+ * 
+ * @param name The name of the header.
+ * @return The found information after the given header.
+ */
 string RequestInfo::getHeader(string name) {
-	// regex lineReg("(.+\\n)+");
-	// sregex_iterator lineNext(fullRequest.begin(), fullRequest.end(), lineReg);
-	// sregex_iterator end;
-	// smatch smat = *lineNext;
-	// for (string match = smat.str(); lineNext != end; lineNext++, smat = *lineNext, match = smat.str()) {
-	// }
-
 	size_t start = fullRequest.find(name);
 	if (start == string::npos) {
 		return NULL;

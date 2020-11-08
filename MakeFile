@@ -9,8 +9,8 @@ all: build
 $(BIN):
 	if [ ! -d "/$(BIN)" ]; then mkdir $(BIN); fi
 
-build: $(BIN) | $(BIN)/server.o $(BIN)/responsehelper.o $(BIN)/requestinfo.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o
-	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/responsehelper.o $(BIN)/requestinfo.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o -o $(BIN)/Server.exe
+build: $(BIN) | $(BIN)/responseinfo.o $(BIN)/server.o $(BIN)/responsehelper.o $(BIN)/requestinfo.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o
+	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/responseinfo.o $(BIN)/responsehelper.o $(BIN)/requestinfo.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o -o $(BIN)/Server.exe
 
 $(BIN)/server.o: src/server.cpp
 	$(CC) $(CFLAGS) -c src/server.cpp -o $(BIN)/server.o
@@ -27,12 +27,16 @@ $(BIN)/clienthandler.o: src/requesthandler.hpp src/clienthandler.hpp  src/client
 $(BIN)/requesthandler.o: src/requestinfo.hpp src/requesthandler.hpp src/responsehelper.hpp src/requesthandler.cpp
 	$(CC) $(CFLAGS) -c src/requesthandler.cpp -o $(BIN)/requesthandler.o
 
+$(BIN)/responseinfo.o: src/responseinfo.hpp src/responseinfo.cpp
+	$(CC) $(CFLAGS) -c src/responseinfo.cpp -o $(BIN)/responseinfo.o
+
 clean:
 	rm $(BIN)/server.o
 	rm $(BIN)/responsehelper.o
 	rm $(BIN)/requestinfo.o
 	rm $(BIN)/clienthandler.o
 	rm $(BIN)/requesthandler.o
+	rm $(BIN)/responseinfo.o
 	rm $(BIN)/Server.exe
 	rmdir $(BIN)
 
