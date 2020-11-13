@@ -45,6 +45,12 @@ int getRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int postRequest(RequestInfo info) {
+	//We can remove once recv() returns full request
+	if (!info.fileName.empty() && !info.body.empty()) {
+		std::fstream fileToStore = std::fstream(info.fileName, std::ios::out | std::ios::binary);
+		fileToStore << info.body;
+		fileToStore.close();
+	}
 	return 0;
 }
 
