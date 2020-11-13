@@ -19,6 +19,9 @@ public:
 	int socketDescriptor;
 	RequestMethod method;
 	std::string path;
+	std::string fileName;
+	std::string body;
+	std::string boundary;
 
 	RequestInfo(std::string req, int sD);
 	~RequestInfo();
