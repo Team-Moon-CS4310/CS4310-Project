@@ -45,6 +45,16 @@ RequestInfo::RequestInfo(string req, int sD) {
 	} else if (match.compare("POST") == 0) {
 		method = POST;
 		contentLength = stoi(getHeader("Content-Length"));
+		boundary = getHeader("boundary");
+		//Need check since for some reason, recv() returns headers as first chunk
+		//Subsequent chunks has the information we need
+		//Remove once we implement recv() to return full request
+		if (!getHeader("filename").empty()) {
+			fileName = getHeader("filename");
+		}
+		if (!getHeader("body").empty()) {
+			body = getHeader("body");
+		}
 		cerr << "length: " << getHeader("Content-Length") << "\n";
 	} else if (match.compare("DELETE") == 0) {
 		method = DELETE;
@@ -68,13 +78,66 @@ RequestInfo::~RequestInfo() {
  * @return The found information after the given header.
  */
 string RequestInfo::getHeader(string name) {
-	size_t start = fullRequest.find(name);
-	if (start == string::npos) {
-		return NULL;
-	}
-	size_t endLine = fullRequest.find("\n", start);
+	size_t start;
+	size_t endLine;
+	size_t startOfData;
+	size_t minimum;
 
-	size_t startOfData = start + name.length() + 2;
+	if (name.compare("body") == 0) {
+		minimum = fullRequest.find("filename");
+		
+		if (minimum == string::npos) {
+			//Returns empty string
+			//Error if return NULL when function returns string
+			return "";
+		}
+		else {
+			string printedBoundary = "";
+			printedBoundary.append("-");
+			printedBoundary.append("-");
+			printedBoundary.append(boundary);
+			
+			endLine = fullRequest.find(printedBoundary);
+
+			while (endLine < minimum) {
+				//Gets next iteration
+				endLine = fullRequest.find(printedBoundary, endLine + 1);
+			}
+		}
+
+		//"\r\n\r\n" is at the end of headers
+		start = fullRequest.find("\r\n\r\n");
+		//Gets the right boundary section of where we get the data
+		while (start < minimum) {
+			//Gets next iteration
+			start = fullRequest.find("\r\n\r\n", start + 1);
+		}
+		startOfData = start + 4;
+	}
+	else {
+		start = fullRequest.find(name);
+
+		if (start == string::npos) {
+			//Returns empty string
+			//Error if return NULL when function returns string
+			return "";
+		}
+
+		endLine = fullRequest.find("\n", start);
+
+		startOfData = start + name.length();
+
+		if (name.compare("Content-Length") == 0) {
+			startOfData += 2;
+		}
+		else if (name.compare("boundary") == 0) {
+			startOfData += 1;
+		}
+		else if (name.compare("filename") == 0) {
+			startOfData += 2;
+			endLine -= 2;
+		}
+	}
 
 	return fullRequest.substr(startOfData, endLine - startOfData);
 }
