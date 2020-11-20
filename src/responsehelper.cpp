@@ -18,7 +18,6 @@ using namespace std;
 int sendResponse(ResponseInfo reply) {
 	string content = reply.buildResponse();
 	auto tosend = content.c_str();
-	cout << content << endl;
 	int s = send(reply.socketDescriptor, tosend, strlen(tosend), 0);
 	if (s == -1) {
 		perror("sendResponse");

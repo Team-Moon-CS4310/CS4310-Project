@@ -31,15 +31,9 @@ $(BIN)/responseinfo.o: src/responseinfo.hpp src/responseinfo.cpp
 	$(CC) $(CFLAGS) -c src/responseinfo.cpp -o $(BIN)/responseinfo.o
 
 clean:
-	rm $(BIN)/server.o
-	rm $(BIN)/responsehelper.o
-	rm $(BIN)/requestinfo.o
-	rm $(BIN)/clienthandler.o
-	rm $(BIN)/requesthandler.o
-	rm $(BIN)/responseinfo.o
+	rm $(BIN)/*.o
 	rm $(BIN)/Server.exe
 	rmdir $(BIN)
 
 debug: build
 	gdb Server.exe
-

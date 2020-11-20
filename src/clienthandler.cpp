@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <fstream>
 #include <iostream>
 
 #include "requesthandler.hpp"
@@ -22,20 +23,51 @@ Order of operations we want:
  * @return int the status code.
  */
 int handleClient(int sD) {
-	cout << "Inside: " << sD << endl;
+	// TODO move away from in-memory. Switch to buffer everything.
+	/* 
+	WARN anything that has to do with normal string manipulation will likely break the request data.
+	Avoid at all cost in this method.
+	*/
+	char *total = new char[1000000];
+	int recvtotal = 0;
+	char buffer[1024];
 
-	char buffer[2000];
-	int received = recv(sD, buffer, sizeof(buffer), 0);
-	if (received == -1) {
-		perror("received");
-		cout << "ERROR RECEIVING!" << endl;
+	// Got help from https://github.com/iafonov/cosmonaut/blob/2bec53d0fff1c59d1e4089b582c910cbf8b9fd5c/src/net.c#L101
+	fd_set sDset;
+	timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	FD_ZERO(&sDset);
+	FD_SET(sD, &sDset);
+	int ready = select(sD + 1, &sDset, NULL, NULL, &tv);
+
+	while (ready > 0) {
+		memset(buffer, 0, sizeof(buffer));
+		int received = recv(sD, buffer, sizeof(buffer), 0);
+		if (received == -1) {
+			perror("received");
+			cout << "ERROR RECEIVING!" << endl;
+		} else if (received == 0) {
+			cout << "ZERO DATA?" << endl;
+			return 0;
+		}
+
+		// We HAVE TO manipulate this data like this, there's no way around it.
+		for (int i = 0; i < received; i++) {
+			total[i + recvtotal] = buffer[i];
+		}
+		recvtotal += received;
+
+		ready = select(sD + 1, &sDset, NULL, NULL, &tv);
+		cout << "selectin: " << ready << endl;
 	}
 
-	cerr << received << "\n";
+	ofstream fileToStore("request.bin");
+	fileToStore.write(total, recvtotal);
+	fileToStore.close();
 
-	cerr << "\033[34m" << buffer << "\033[0m\n";
-
-	string str(buffer);
+	string str(total);
+	delete[] total;
 	RequestInfo info(str, sD);
 
 	switch (info.method) {
@@ -57,6 +89,6 @@ int handleClient(int sD) {
 		break;
 	}
 
-	cerr << "done\n";
+	cerr << "Done with client\n";
 	return 0;
 }

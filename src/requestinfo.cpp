@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <regex>
+
 using namespace std;
 
 /*
@@ -55,7 +56,7 @@ RequestInfo::RequestInfo(string req, int sD) {
 		if (!getHeader("body").empty()) {
 			body = getHeader("body");
 		}
-		cerr << "length: " << getHeader("Content-Length") << "\n";
+
 	} else if (match.compare("DELETE") == 0) {
 		method = DELETE;
 	} else if (match.compare("PUT") == 0) {
@@ -85,18 +86,19 @@ string RequestInfo::getHeader(string name) {
 
 	if (name.compare("body") == 0) {
 		minimum = fullRequest.find("filename");
-		
+
 		if (minimum == string::npos) {
 			//Returns empty string
 			//Error if return NULL when function returns string
 			return "";
-		}
-		else {
+		} else {
 			string printedBoundary = "";
 			printedBoundary.append("-");
 			printedBoundary.append("-");
 			printedBoundary.append(boundary);
-			
+
+			cout << "Boundary: " << printedBoundary << endl;
+
 			endLine = fullRequest.find(printedBoundary);
 
 			while (endLine < minimum) {
@@ -113,8 +115,7 @@ string RequestInfo::getHeader(string name) {
 			start = fullRequest.find("\r\n\r\n", start + 1);
 		}
 		startOfData = start + 4;
-	}
-	else {
+	} else {
 		start = fullRequest.find(name);
 
 		if (start == string::npos) {
@@ -129,11 +130,9 @@ string RequestInfo::getHeader(string name) {
 
 		if (name.compare("Content-Length") == 0) {
 			startOfData += 2;
-		}
-		else if (name.compare("boundary") == 0) {
+		} else if (name.compare("boundary") == 0) {
 			startOfData += 1;
-		}
-		else if (name.compare("filename") == 0) {
+		} else if (name.compare("filename") == 0) {
 			startOfData += 2;
 			endLine -= 2;
 		}

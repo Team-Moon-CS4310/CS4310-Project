@@ -86,6 +86,8 @@ int main(int argc, char const *argv[]) {
 		// Just is a reference to the socket buffer when used properly.
 		sD = accept(socketResult, (sockaddr *)&clientSocket, &clientAddrSize);
 
+		std::cout << "Client Accepted" << std::endl;
+
 		// Error printing.
 		if (sD == -1) {
 			perror("acceptResult");

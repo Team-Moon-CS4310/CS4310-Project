@@ -45,10 +45,11 @@ int getRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int postRequest(RequestInfo info) {
+	// TODO FIX
 	//We can remove check once recv() returns full request
 	if (!info.fileName.empty() && !info.body.empty()) {
-		std::fstream fileToStore = std::fstream(info.fileName, std::ios::out | std::ios::binary);
-		fileToStore << info.body;
+		std::fstream fileToStore = std::fstream("dummy.pdf", std::ios::out | std::ios::binary);
+		fileToStore.write(info.body.c_str(), info.contentLength);
 		fileToStore.close();
 	}
 	return 0;
