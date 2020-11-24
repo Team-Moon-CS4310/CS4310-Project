@@ -9,7 +9,10 @@ all: build
 $(BIN):
 	if [ ! -d "/$(BIN)" ]; then mkdir $(BIN); fi
 
-build: $(BIN) | $(BIN)/responseinfo.o $(BIN)/server.o $(BIN)/responsehelper.o $(BIN)/requestinfo.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o
+files:
+	if [ ! -d "/files" ]; then mkdir files; fi
+
+build: $(BIN) files | $(BIN)/responseinfo.o $(BIN)/server.o $(BIN)/responsehelper.o $(BIN)/requestinfo.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o
 	$(CC) $(CFLAGS) $(BIN)/server.o $(BIN)/responseinfo.o $(BIN)/responsehelper.o $(BIN)/requestinfo.o $(BIN)/clienthandler.o $(BIN)/requesthandler.o -o $(BIN)/Server.exe
 
 $(BIN)/server.o: src/server.cpp
@@ -33,6 +36,7 @@ $(BIN)/responseinfo.o: src/responseinfo.hpp src/responseinfo.cpp
 clean:
 	rm $(BIN)/*.o
 	rm $(BIN)/Server.exe
+	rm -r files
 	rmdir $(BIN)
 
 debug: build

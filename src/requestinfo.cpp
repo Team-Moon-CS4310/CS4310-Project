@@ -1,31 +1,27 @@
 #include "requestinfo.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <regex>
 
 using namespace std;
 
-/*
-Parses HTTP request string. TODO docs.
-See https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9 for layout of HTTP request format.
-*/
-
 /**
  * @brief Construct a new Request Info:: Request Info object
  * 
- * @param req The full string of recieved information from the client, including
- * the full header and whatnot.
+ * @param head The header of the request and potentially a little data afterwards. 
+ * AKA the first 1024 bytes.
  * See https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9
  * @param sD Socket Descriptor 
  */
-RequestInfo::RequestInfo(string req, int sD) {
+RequestInfo::RequestInfo(string head, int sD, string requestFileName) {
 	socketDescriptor = sD;
 	// Parse string similar to the terminal we made. Assignment 4.
-	fullRequest = req;
+	fullRequest = head;
 
 	// Get basic things we will always need
 	regex reg("(\\S+)");
-	sregex_iterator next(req.begin(), req.end(), reg);
+	sregex_iterator next(head.begin(), head.end(), reg);
 
 	smatch smatch = *next;
 	sregex_iterator end;
@@ -47,15 +43,8 @@ RequestInfo::RequestInfo(string req, int sD) {
 		method = POST;
 		contentLength = stoi(getHeader("Content-Length"));
 		boundary = getHeader("boundary");
-		//Need check since for some reason, recv() returns headers as first chunk
-		//Subsequent chunks has the information we need
-		//Remove once we implement recv() to return full request
-		if (!getHeader("filename").empty()) {
-			fileName = getHeader("filename");
-		}
-		if (!getHeader("body").empty()) {
-			body = getHeader("body");
-		}
+		fileName = getHeader("filename");
+		separateFile(requestFileName);
 
 	} else if (match.compare("DELETE") == 0) {
 		method = DELETE;
@@ -82,61 +71,82 @@ string RequestInfo::getHeader(string name) {
 	size_t start;
 	size_t endLine;
 	size_t startOfData;
-	size_t minimum;
 
-	if (name.compare("body") == 0) {
-		minimum = fullRequest.find("filename");
+	start = fullRequest.find(name);
 
-		if (minimum == string::npos) {
-			//Returns empty string
-			//Error if return NULL when function returns string
-			return "";
-		} else {
-			string printedBoundary = "";
-			printedBoundary.append("-");
-			printedBoundary.append("-");
-			printedBoundary.append(boundary);
+	if (start == string::npos) {
+		//Returns empty string
+		//Error if return NULL when function returns string
+		return "";
+	}
 
-			cout << "Boundary: " << printedBoundary << endl;
+	endLine = fullRequest.find("\n", start);
 
-			endLine = fullRequest.find(printedBoundary);
+	startOfData = start + name.length();
 
-			while (endLine < minimum) {
-				//Gets next iteration
-				endLine = fullRequest.find(printedBoundary, endLine + 1);
-			}
-		}
-
-		//"\r\n\r\n" is at the end of headers
-		start = fullRequest.find("\r\n\r\n");
-		//Gets the right boundary section of where we get the data
-		while (start < minimum) {
-			//Gets next iteration
-			start = fullRequest.find("\r\n\r\n", start + 1);
-		}
-		startOfData = start + 4;
-	} else {
-		start = fullRequest.find(name);
-
-		if (start == string::npos) {
-			//Returns empty string
-			//Error if return NULL when function returns string
-			return "";
-		}
-
-		endLine = fullRequest.find("\n", start);
-
-		startOfData = start + name.length();
-
-		if (name.compare("Content-Length") == 0) {
-			startOfData += 2;
-		} else if (name.compare("boundary") == 0) {
-			startOfData += 1;
-		} else if (name.compare("filename") == 0) {
-			startOfData += 2;
-			endLine -= 2;
-		}
+	if (name.compare("Content-Length") == 0) {
+		startOfData += 2;
+	} else if (name.compare("boundary") == 0) {
+		startOfData += 1;
+	} else if (name.compare("filename") == 0) {
+		startOfData += 2;
+		endLine -= 2;
 	}
 
 	return fullRequest.substr(startOfData, endLine - startOfData);
+}
+
+/**
+ * @brief Separates the file from the frontend request if it's multipart/form-content ONLY.
+ * Also, only separates the first file.
+ * 
+ * @param requestFileName 
+ */
+void RequestInfo::separateFile(string requestFileName) {
+	string printedBoundary = "";
+	printedBoundary.append("-");
+	printedBoundary.append("-");
+	printedBoundary.append(boundary);
+
+	// Parse requestFile now to separate the body into a separate file.
+	// Read line by line until we hit the boundary. Record the start and end of the file.
+	cout << "filename: " << requestFileName << endl;
+	fstream file(requestFileName);
+	string fileLoc = "files/";
+	fileLoc.append(fileName);
+	ofstream fileWrite(fileLoc);
+	string line;
+	int stage = 0;
+	while (getline(file, line)) {
+		if (line.find(printedBoundary) != string::npos) {
+			// Found the first boundary.
+			// Discard next 3 lines.
+			cout << line << endl;
+			getline(file, line);
+			cout << line << endl;
+			getline(file, line);
+			cout << line << endl;
+			getline(file, line);
+			cout << line << endl;
+			stage = 1;
+			break;
+		}
+	}
+	if (stage == 1) {
+		// Now we want to copy the bytes to a new file until we hit the boundary again.
+		// TESTING
+		while (getline(file, line)) {
+			cout << line << endl;
+			if (line.find(printedBoundary) != string::npos) {
+				break;
+			}
+			line.append("\n");	// TODO look into. Is likely incorrect and might cause problems. But reading lines already removes the \n, so maybe it's okay?
+			fileWrite.write(line.c_str(), line.length());
+		}
+	} else {
+		cout << "Warning: no file parsed when expected!?" << endl;
+	}
+
+	file.close();
+	fileWrite.close();
 }

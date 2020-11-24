@@ -17,7 +17,7 @@ int main(int argc, char const *argv[]) {
 
 	memset(&hint, 0, sizeof hint);	// Required.
 	hint.ai_family = AF_UNSPEC;		// Don't care if ipv4 or ipv6.
-	hint.ai_socktype = SOCK_STREAM;
+	hint.ai_socktype = SOCK_STREAM;	// Sets the socket to handle TCP instead of UDP. VERY IMPORTANT!
 	hint.ai_flags = AI_PASSIVE;	 // Puts local host address in automatically.
 
 	// Sets up the struct info.

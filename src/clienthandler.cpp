@@ -28,9 +28,20 @@ int handleClient(int sD) {
 	WARN anything that has to do with normal string manipulation will likely break the request data.
 	Avoid at all cost in this method.
 	*/
-	char *total = new char[1000000];
+	// 1024 should be enough bytes for the header.
+	char *header = new char[1024];
 	int recvtotal = 0;
 	char buffer[1024];
+
+	string fileName = "binaries/request";
+	int pid = getpid();
+	cout << "pid: " << to_string(pid) << endl;
+	fileName.append(to_string(pid));
+	fileName.append(".bin");
+
+	cout << "filename: " << fileName << endl;
+
+	ofstream fileToStore(fileName);
 
 	// Got help from https://github.com/iafonov/cosmonaut/blob/2bec53d0fff1c59d1e4089b582c910cbf8b9fd5c/src/net.c#L101
 	fd_set sDset;
@@ -52,23 +63,26 @@ int handleClient(int sD) {
 			return 0;
 		}
 
+		fileToStore.write(buffer, received);
+
 		// We HAVE TO manipulate this data like this, there's no way around it.
-		for (int i = 0; i < received; i++) {
-			total[i + recvtotal] = buffer[i];
+		if (recvtotal == 0) {
+			for (int i = 0; i < received; i++) {
+				header[i + recvtotal] = buffer[i];
+			}
 		}
+		
 		recvtotal += received;
 
 		ready = select(sD + 1, &sDset, NULL, NULL, &tv);
 		cout << "selectin: " << ready << endl;
 	}
 
-	ofstream fileToStore("request.bin");
-	fileToStore.write(total, recvtotal);
 	fileToStore.close();
 
-	string str(total);
-	delete[] total;
-	RequestInfo info(str, sD);
+	string str(header);
+	delete[] header;
+	RequestInfo info(str, sD, fileName);
 
 	switch (info.method) {
 	case GET:
@@ -88,6 +102,9 @@ int handleClient(int sD) {
 		send(sD, errmsg, strlen(errmsg), 0);
 		break;
 	}
+	// Remove the request file for this specific client.
+	cout << "removing " << fileName << endl;
+	remove(fileName.c_str());
 
 	cerr << "Done with client\n";
 	return 0;
