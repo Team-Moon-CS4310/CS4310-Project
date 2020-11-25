@@ -15,10 +15,7 @@ private:
 
 public:
 	HttpStatus status;
-	std::string headers;
 	std::string filePath;
-	std::string contentType;
-	int fileSize;
 
 	int socketDescriptor;
 

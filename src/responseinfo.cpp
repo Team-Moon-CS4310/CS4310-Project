@@ -3,15 +3,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <filesystem>
 #include <iostream>
 
 using namespace std;
 
 /**
  * TODO FIX DOC
- * @brief Builds the full response string to be directly sent to the client via send().
+ * @brief Builds the http header string to be directly sent to the client via send().
  * 
- * @return string full response, in including HTTP/1.1, the status code, and the body.
+ * @return string http header, in including HTTP/1.1, the status code, and other misc headers.
  */
 string ResponseInfo::buildHeader() {
 	string result = "";
@@ -32,17 +33,12 @@ string ResponseInfo::buildHeader() {
 		result.append("418 I'm a teapot");	// Short and stout.
 		break;
 	}
-	//result.append("\r\n");
-
-	// if (!this->contentType.empty()) {
-	// 	result.append("Content-Type: ");
-	// 	result.append(this->contentType);
-	// }
-	//result.append("\r\n");
-	//result.append("Content-Disposition: attachment; filename=\"test.pdf\"");
-	//result.append("\r\n");
-	// result.append("Content-Length: ");
-	// result.append(to_string(this->fileSize));
+	if (!this->filePath.empty()) {
+		result.append("\r\n");
+		result.append("Content-Length: ");
+		filesystem::path p{this->filePath};
+		result.append(to_string(filesystem::file_size(p)));
+	}
 	result.append("\r\n");
 	result.append("\r\n");
 

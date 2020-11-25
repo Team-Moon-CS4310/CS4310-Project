@@ -26,8 +26,7 @@ int getRequest(RequestInfo info) {
 	if (info.path.compare("/") == 0) {
 		// Set reply status.
 		reply.status = OK;
-		// Put the index.html file into the response body.
-		// reply.body = fileToString();
+		// Set the index.html file to be sent after the header.
 		reply.filePath = "res/index.html";
 		// Pass the response info to be built and sent.
 		sendResponse(&reply);
@@ -35,18 +34,16 @@ int getRequest(RequestInfo info) {
 		reply.status = NOT_FOUND;
 		sendResponse(&reply);
 	} else if (info.path.find("/file") != string::npos) {
-		string fileName = info.path.substr(6, info.path.size());
-		string pathName = "files/";
-		pathName.append(fileName);
-		// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file -exists-in-c
+		string fileName = info.path.substr(6, info.path.size());  // Extract the stuff after /file/
+		string pathName = "files/";	 // This is where our files are stored.
+		pathName.append(fileName);	// Make the full local path.
+
+		// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file-exists-in-c
 		ifstream check(pathName);
 		if (check.is_open()) {
-			cout << "FILE FOUND!" << endl;
-			reply.contentType = "application/pdf";
-			reply.filePath = pathName;
 			reply.status = OK;
+			reply.filePath = pathName;
 		} else {
-			cout << "FILE NOT FOUND!" << endl;
 			reply.status = NOT_FOUND;
 		}
 		sendResponse(&reply);
