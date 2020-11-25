@@ -1,3 +1,4 @@
+#include <fstream>
 #include <string>
 
 enum HttpStatus {
@@ -11,14 +12,19 @@ enum HttpStatus {
 
 class ResponseInfo {
 private:
+
 public:
 	HttpStatus status;
 	std::string headers;
-	std::string body;
+	std::string filePath;
+	std::string contentType;
+	int fileSize;
+
 	int socketDescriptor;
 
 	ResponseInfo(int socketDescriptor);
 	~ResponseInfo();
 
-	std::string buildResponse();
+	std::string buildHeader();
+
 };

@@ -21,20 +21,37 @@ using namespace std;
 int getRequest(RequestInfo info) {
 	ResponseInfo reply(info.socketDescriptor);
 	cout << info.path << endl;
+	reply.socketDescriptor = info.socketDescriptor;
 
 	if (info.path.compare("/") == 0) {
 		// Set reply status.
 		reply.status = OK;
 		// Put the index.html file into the response body.
-		reply.body = fileToString("res/index.html");
-		reply.socketDescriptor = info.socketDescriptor;
+		// reply.body = fileToString();
+		reply.filePath = "res/index.html";
 		// Pass the response info to be built and sent.
-		sendResponse(reply);
+		sendResponse(&reply);
 	} else if (info.path.compare("/favicon.ico") == 0) {
 		reply.status = NOT_FOUND;
-		reply.socketDescriptor = info.socketDescriptor;
-		sendResponse(reply);
+		sendResponse(&reply);
+	} else if (info.path.find("/file") != string::npos) {
+		string fileName = info.path.substr(6, info.path.size());
+		string pathName = "files/";
+		pathName.append(fileName);
+		// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file -exists-in-c
+		ifstream check(pathName);
+		if (check.is_open()) {
+			cout << "FILE FOUND!" << endl;
+			reply.contentType = "application/pdf";
+			reply.filePath = pathName;
+			reply.status = OK;
+		} else {
+			cout << "FILE NOT FOUND!" << endl;
+			reply.status = NOT_FOUND;
+		}
+		sendResponse(&reply);
 	}
+
 	return 0;
 }
 
@@ -45,13 +62,9 @@ int getRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int postRequest(RequestInfo info) {
-	// TODO FIX
-	//We can remove check once recv() returns full request
-	if (!info.fileName.empty() && !info.body.empty()) {
-		std::fstream fileToStore = std::fstream("dummy.pdf", std::ios::out | std::ios::binary);
-		fileToStore.write(info.body.c_str(), info.contentLength);
-		fileToStore.close();
+	if (info.path.compare("/upload") == 0) {
 	}
+
 	return 0;
 }
 

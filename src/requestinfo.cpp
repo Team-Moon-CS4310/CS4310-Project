@@ -110,7 +110,6 @@ void RequestInfo::separateFile(string requestFileName) {
 
 	// Parse requestFile now to separate the body into a separate file.
 	// Read line by line until we hit the boundary. Record the start and end of the file.
-	cout << "filename: " << requestFileName << endl;
 	fstream file(requestFileName);
 	string fileLoc = "files/";
 	fileLoc.append(fileName);
@@ -121,13 +120,9 @@ void RequestInfo::separateFile(string requestFileName) {
 		if (line.find(printedBoundary) != string::npos) {
 			// Found the first boundary.
 			// Discard next 3 lines.
-			cout << line << endl;
 			getline(file, line);
-			cout << line << endl;
 			getline(file, line);
-			cout << line << endl;
 			getline(file, line);
-			cout << line << endl;
 			stage = 1;
 			break;
 		}
@@ -136,7 +131,6 @@ void RequestInfo::separateFile(string requestFileName) {
 		// Now we want to copy the bytes to a new file until we hit the boundary again.
 		// TESTING
 		while (getline(file, line)) {
-			cout << line << endl;
 			if (line.find(printedBoundary) != string::npos) {
 				break;
 			}

@@ -1,13 +1,19 @@
 #include "responseinfo.hpp"
 
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <iostream>
+
 using namespace std;
 
 /**
+ * TODO FIX DOC
  * @brief Builds the full response string to be directly sent to the client via send().
  * 
  * @return string full response, in including HTTP/1.1, the status code, and the body.
  */
-string ResponseInfo::buildResponse() {
+string ResponseInfo::buildHeader() {
 	string result = "";
 	result.append("HTTP/1.1 ");
 
@@ -26,10 +32,19 @@ string ResponseInfo::buildResponse() {
 		result.append("418 I'm a teapot");	// Short and stout.
 		break;
 	}
-	if (!body.empty()) {
-		result.append("\n\n");
-		result.append(body);
-	}
+	//result.append("\r\n");
+
+	// if (!this->contentType.empty()) {
+	// 	result.append("Content-Type: ");
+	// 	result.append(this->contentType);
+	// }
+	//result.append("\r\n");
+	//result.append("Content-Disposition: attachment; filename=\"test.pdf\"");
+	//result.append("\r\n");
+	// result.append("Content-Length: ");
+	// result.append(to_string(this->fileSize));
+	result.append("\r\n");
+	result.append("\r\n");
 
 	return result;
 }

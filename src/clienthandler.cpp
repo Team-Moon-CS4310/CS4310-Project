@@ -35,7 +35,6 @@ int handleClient(int sD) {
 
 	string fileName = "binaries/request";
 	int pid = getpid();
-	cout << "pid: " << to_string(pid) << endl;
 	fileName.append(to_string(pid));
 	fileName.append(".bin");
 
