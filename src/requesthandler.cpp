@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <filesystem>
 
 #include "requestinfo.hpp"
 #include "responsehelper.hpp"
@@ -26,14 +27,32 @@ int getRequest(RequestInfo info) {
 	if (info.path.compare("/") == 0) {
 		// Set reply status.
 		reply.status = OK;
-		// Set the index.html file to be sent after the header.
-		reply.filePath = "res/index.html";
+		// Set the response html file to be sent after the header.
+		string fileName = "res/response";
+		// Sets unique response html file name.
+		int pid = getpid();
+		fileName.append(to_string(pid));
+		fileName.append(".html");
+		// Write to html file
+		ofstream myFile;
+		myFile.open(fileName);
+		myFile << "<!DOCTYPE html><html><head><meta charset='utf-8'><meta http-equiv='X-UA-Compatible' content='IE=edge'><title>Page Title</title><meta name='viewport' content='width=device-width, initial-scale=1'></head>";
+		myFile << "<body><form action=\"/testinput\" method=\"get\"><input type=\"text\" id=\"testinputid\" name=\"testinputname\"> </form><form action=\"upload\" method=\"post\" enctype=\"multipart/form-data\"><input type=\"file\" name=\"uploadfilevalue\" id=\"uploadfileid\"><input type=\"submit\" value=\"uploadfile\" name=\"submitfile\"> </form>";
+		myFile << "\n<ul style=\"list-style-type:none;\">";
+		// Iterates through files and link with a button
+		for(auto& p: filesystem::directory_iterator("files")){
+			myFile << "<a href=" << p.path() << "><li><button type=\"button\">" << p.path().string().substr(6, p.path().string().length()) << "</button></li></a>\n";
+		}
+		myFile << "</ul></body></html>";
+		myFile.close();
+		// Set file path to new html file
+		reply.filePath = fileName;
 		// Pass the response info to be built and sent.
 		sendResponse(&reply);
 	} else if (info.path.compare("/favicon.ico") == 0) {
 		reply.status = NOT_FOUND;
 		sendResponse(&reply);
-	} else if (info.path.find("/file") != string::npos) {
+	} else if (info.path.find("/files") != string::npos) {
 		string fileName = info.path.substr(6, info.path.size());  // Extract the stuff after /file/
 		string pathName = "files/";	 // This is where our files are stored.
 		pathName.append(fileName);	// Make the full local path.
