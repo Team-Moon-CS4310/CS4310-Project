@@ -11,6 +11,8 @@
 
 using namespace std;
 
+string createHTML();
+
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages for response.
 // Want to return base html page.
 /**
@@ -27,26 +29,8 @@ int getRequest(RequestInfo info) {
 	if (info.path.compare("/") == 0) {
 		// Set reply status.
 		reply.status = OK;
-		// Set the response html file to be sent after the header.
-		string fileName = "res/response";
-		// Sets unique response html file name.
-		int pid = getpid();
-		fileName.append(to_string(pid));
-		fileName.append(".html");
-		// Write to html file
-		ofstream myFile;
-		myFile.open(fileName);
-		myFile << "<!DOCTYPE html><html><head><meta charset='utf-8'><meta http-equiv='X-UA-Compatible' content='IE=edge'><title>Page Title</title><meta name='viewport' content='width=device-width, initial-scale=1'></head>";
-		myFile << "<body><form action=\"/testinput\" method=\"get\"><input type=\"text\" id=\"testinputid\" name=\"testinputname\"> </form><form action=\"upload\" method=\"post\" enctype=\"multipart/form-data\"><input type=\"file\" name=\"uploadfilevalue\" id=\"uploadfileid\"><input type=\"submit\" value=\"uploadfile\" name=\"submitfile\"> </form>";
-		myFile << "\n<ul style=\"list-style-type:none;\">";
-		// Iterates through files and link with a button
-		for(auto& p: filesystem::directory_iterator("files")){
-			myFile << "<a href=" << p.path() << "><li><button type=\"button\">" << p.path().string().substr(6, p.path().string().length()) << "</button></li></a>\n";
-		}
-		myFile << "</ul></body></html>";
-		myFile.close();
 		// Set file path to new html file
-		reply.filePath = fileName;
+		reply.filePath = createHTML();
 		// Pass the response info to be built and sent.
 		sendResponse(&reply);
 	} else if (info.path.compare("/favicon.ico") == 0) {
@@ -102,4 +86,30 @@ int deleteRequest(RequestInfo info) {
  */
 int putRequest(RequestInfo info) {
 	return 0;
+}
+
+string createHTML() {
+	// Set the response html file to be sent after the header.
+	string fileName = "res/response";
+	// Sets unique response html file name.
+	int pid = getpid();
+	fileName.append(to_string(pid));
+	fileName.append(".html");
+	// Write to html file (Thanks to https://stackoverflow.com/questions/11206604/create-html-reports-using-c)
+	ofstream myFile;
+	myFile.open(fileName);
+	myFile << "<!DOCTYPE html><html>\n";
+	myFile << "<style>body{background-color:lightblue;}\nul{list-style-type:none;padding-left:0px;}\nli{padding:10px;background-color:beige;}\n </style>\n";
+	myFile << "<head>\n<meta charset='utf-8'>\n<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n<title>Team Moon</title>\n<meta name='viewport' content='width=device-width, initial-scale=1'></head>\n";
+	myFile << "<body>\n<form action=\"/testinput\" method=\"get\"><input type=\"text\" id=\"testinputid\" name=\"testinputname\"> </form><form action=\"upload\" method=\"post\" enctype=\"multipart/form-data\"><input type=\"file\" name=\"uploadfilevalue\" id=\"uploadfileid\"><input type=\"submit\" value=\"uploadfile\" name=\"submitfile\"> </form>\n";
+	myFile << "<h5>Uploaded Files</h5>";
+	myFile << "\n<ul>";
+	// Iterates through files and link with a button
+	for(auto& p: filesystem::directory_iterator("files")){
+		myFile << "\n<a href=" << p.path() << "><li><button type=\"button\">" << p.path().string().substr(6, p.path().string().length()) << "</button></li></a>\n";
+	}
+	myFile << "</ul></body></html>";
+	myFile.close();
+	// Return HTML file path
+	return fileName;
 }
