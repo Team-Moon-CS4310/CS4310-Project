@@ -74,7 +74,6 @@ int handleClient(int sD) {
 		recvtotal += received;
 
 		ready = select(sD + 1, &sDset, NULL, NULL, &tv);
-		cout << "selectin: " << ready << endl;
 	}
 
 	fileToStore.close();
