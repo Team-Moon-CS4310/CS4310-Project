@@ -87,6 +87,23 @@ int postRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int deleteRequest(RequestInfo info) {
+	filesystem::remove("files/" + info.fileName);
+
+	ResponseInfo reply(info.socketDescriptor);
+	info.path = "/";
+	cout << "DELETE" << info.path << endl;
+	reply.socketDescriptor = info.socketDescriptor;
+	
+	if (info.path.compare("/") == 0) {
+		// Set reply status.
+		reply.status = OK;
+		// Set file path to new html file
+		reply.filePath = createHTML();
+		// Pass the response info to be built and sent.
+		sendResponse(&reply);
+		remove(reply.filePath.c_str());
+	}
+	
 	return 0;
 }
 
@@ -119,6 +136,9 @@ string createHTML() {
 	// Iterates through files and link with a button
 	for(auto& p: filesystem::directory_iterator("files")){
 		myFile << "\n<a href=" << p.path() << "><li><button type=\"button\">" << p.path().string().substr(6, p.path().string().length()) << "</button></li></a>\n";
+		myFile << "<form action=\"files\" method=\"get\">";
+		myFile <<    "<input type=\"submit\" value=\"Delete\" name=\"" << p.path().string().substr(6, p.path().string().length()) << "\">";
+		myFile << "</form>";
 	}
 	myFile << "</ul></body></html>";
 	myFile.close();
