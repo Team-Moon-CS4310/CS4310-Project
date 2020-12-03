@@ -80,6 +80,14 @@ int handleClient(int sD) {
 
 	string str(header);
 	delete[] header;
+	
+	// HTML Form Method does not handle DELETE, so need to create the request
+	if (str.find("/files") != string::npos) {
+		string deleteStr = "DELETE";
+		deleteStr.append(str.substr(3, str.find("\n") - 3));
+		str = deleteStr;
+	}
+	
 	RequestInfo info(str, sD, fileName);
 
 	switch (info.method) {
