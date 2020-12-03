@@ -48,6 +48,7 @@ RequestInfo::RequestInfo(string head, int sD, string requestFileName) {
 
 	} else if (match.compare("DELETE") == 0) {
 		method = DELETE;
+		fileName = getHeader("/files?");
 	} else if (match.compare("PUT") == 0) {
 		method = PUT;
 	}
@@ -91,6 +92,8 @@ string RequestInfo::getHeader(string name) {
 	} else if (name.compare("filename") == 0) {
 		startOfData += 2;
 		endLine -= 2;
+	} else if (name.compare("/files?") == 0) {
+		endLine = fullRequest.find("=");
 	}
 
 	return fullRequest.substr(startOfData, endLine - startOfData);
