@@ -8,11 +8,21 @@ enum RequestMethod {
 };
 
 /*
-Parses HTTP request string. TODO docs.
+Parses HTTP request string.
 See https://medium.com/better-programming/the-anatomy-of-an-http-request-728a469ecba9 for layout of HTTP request format.
 */
+
+/**
+ * @brief Handles the full http request received from clienthandler.hpp. Splits the request up and makes it easier to manage later on.
+ * Additionally, parses the file from the request.
+ * 
+ */
 class RequestInfo {
 private:
+	/**
+	 * @brief The full http request received.
+	 * 
+	 */
 	std::string fullRequest;
 
 public:
@@ -20,6 +30,10 @@ public:
 	int socketDescriptor;
 	RequestMethod method;
 	std::string path;
+	/**
+	 * @brief The file to be sent to the client.
+	 * 
+	 */
 	std::string fileName;
 	std::string body;
 	std::string boundary;

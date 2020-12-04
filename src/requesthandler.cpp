@@ -8,6 +8,7 @@
 
 #include "requestinfo.hpp"
 #include "responsehelper.hpp"
+#include "colors.hpp"
 
 using namespace std;
 
@@ -22,8 +23,12 @@ string createHTML();
  * @return int whether the send response succeeded.
  */
 int getRequest(RequestInfo info) {
+	// Print diagnostic stuff.
+	string s = "GET: '";
+	s.append(info.path).append("' CLIENT: ").append(to_string(pthread_self()));
+	printColor(BLUE, s.c_str());
+
 	ResponseInfo reply(info.socketDescriptor);
-	cout << info.path << endl;
 	reply.socketDescriptor = info.socketDescriptor;
 
 	if (info.path.compare("/") == 0) {
@@ -63,8 +68,12 @@ int getRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int postRequest(RequestInfo info) {
+	// Print diagnostic stuff.
+	string s = "POST: '";
+	s.append(info.path).append("' CLIENT: ").append(to_string(pthread_self()));
+	printColor(BLUE, s.c_str());
+
 	ResponseInfo reply(info.socketDescriptor);
-	cout << "POST: " << info.path << endl;
 	reply.socketDescriptor = info.socketDescriptor;
 
 	if (info.path.compare("/") == 0) {
@@ -120,8 +129,7 @@ string createHTML() {
 	// Set the response html file to be sent after the header.
 	string fileName = "res/response";
 	// Sets unique response html file name.
-	int pid = getpid();
-	fileName.append(to_string(pid));
+	fileName.append(to_string(pthread_self()));
 	fileName.append(".html");
 	// Write to html file (Thanks to https://stackoverflow.com/questions/11206604/create-html-reports-using-c)
 	ofstream myFile;

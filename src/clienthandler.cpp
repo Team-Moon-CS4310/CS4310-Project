@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "colors.hpp"
 #include "requesthandler.hpp"
 using namespace std;
 
@@ -16,30 +17,27 @@ Order of operations we want:
 2. Send request (get, post, delete, or put) to it's appropriate handler (get, post, delete, or put)
 3. That handler then takes the path and then passes it to its appropriate method to handle that specific request.
 */
-// TODO handle 'Connection: keep-alive'
 /**
  * @brief Handles the client right after the server accepts it.
  * 
  * @param sD The socket descriptor made when the client was accepted.
  * @return int the status code.
  */
-int handleClient(int sD) {
-	// TODO move away from in-memory. Switch to buffer everything.
+void *handleClient(void *void_sD) {
 	/* 
 	WARN anything that has to do with normal string manipulation will likely break the request data.
 	Avoid at all cost in this method.
 	*/
 	// 1024 should be enough bytes for the header.
+
+	int sD = *(int *)void_sD;
 	char *header = new char[1024];
 	int recvtotal = 0;
 	char buffer[1024];
 
 	string fileName = "binaries/request";
-	int pid = getpid();
-	fileName.append(to_string(pid));
+	fileName.append(to_string(pthread_self()));
 	fileName.append(".bin");
-
-	cout << "filename: " << fileName << endl;
 
 	ofstream fileToStore(fileName);
 
@@ -83,6 +81,9 @@ int handleClient(int sD) {
 	delete[] header;
 	RequestInfo info(str, sD, fileName);
 
+	// Remove the request file for this specific client.
+	filesystem::remove(fileName);
+
 	switch (info.method) {
 	case GET:
 		getRequest(info);
@@ -101,10 +102,10 @@ int handleClient(int sD) {
 		send(sD, errmsg, strlen(errmsg), 0);
 		break;
 	}
-	// Remove the request file for this specific client.
-	cout << "removing " << fileName << endl;
-	filesystem::remove(fileName);
 
-	cerr << "Done with client\n";
-	return 0;
+	string s = "Done with client ";
+	s.append(to_string((long)pthread_self()));
+
+	printColor(RED, s.c_str());
+	return NULL;
 }

@@ -1,1 +1,1 @@
-int handleClient(int sD);
+void *handleClient(void *void_sD);

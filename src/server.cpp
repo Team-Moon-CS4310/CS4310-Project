@@ -4,10 +4,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include <iostream>
 
 #include "clienthandler.hpp"
+#include "colors.hpp"
 
 pthread_mutex_t m;
 
@@ -26,7 +28,7 @@ int main(int argc, char const *argv[]) {
 	if (result != 0) {
 		std::cout << gai_strerror(result) << "\n";
 	} else {
-		std::cout << "Got address info successfully!" << std::endl;
+		printColor(GREEN, "Got address info successfully!");
 	}
 
 	// Now info points to a list of addrinfos with the given address and port.
@@ -39,7 +41,7 @@ int main(int argc, char const *argv[]) {
 	if (socketResult == -1) {
 		perror("socketResult");
 	} else {
-		std::cout << "Got socket successfully!" << std::endl;
+		printColor(GREEN, "Got socket successfully!");
 	}
 
 	// Thank you https://stackoverflow.com/questions/24194961/how-do-i-use-setsockoptso-reuseaddr
@@ -54,7 +56,7 @@ int main(int argc, char const *argv[]) {
 	if (bindResult == -1) {
 		perror("bindResult");
 	} else {
-		std::cout << "Bound socket successfully!" << std::endl;
+		printColor(GREEN, "Bound socket successfully!");
 	}
 
 	// Might not be best here. TODO LOOKAT
@@ -67,7 +69,7 @@ int main(int argc, char const *argv[]) {
 	if (listenResult == -1) {
 		perror("listenResult");
 	} else {
-		std::cout << "Listening on socket successfully!" << std::endl;
+		printColor(GREEN, "Listening on socket successfully!");
 	}
 
 	// TODO look at select()
@@ -76,17 +78,19 @@ int main(int argc, char const *argv[]) {
 		// Make a new socket for the incoming client. I think?
 		sockaddr_storage clientSocket;
 
+		pthread_t thread;
+
 		// Get the address's length.
 		socklen_t clientAddrSize = sizeof clientSocket;
 		int sD;
 
-		std::cout << "Waiting for Client. . ." << std::endl;
+		printColor(YELLOW, "Waiting for Client. . .");
 		// This is a blocking method. Waits for connection and automatically accepts it.
 		// Makes a socket descriptor, which is actually a file descriptor.
 		// Just is a reference to the socket buffer when used properly.
 		sD = accept(socketResult, (sockaddr *)&clientSocket, &clientAddrSize);
 
-		std::cout << "Client Accepted" << std::endl;
+		printColor(GREEN, "Client Accepted");
 
 		// Error printing.
 		if (sD == -1) {
@@ -94,25 +98,29 @@ int main(int argc, char const *argv[]) {
 			continue;
 		}
 
-		// Duplicates the current process.
-		if (fork() == 0) {
-			// Listening socket is useless to this child.
-			close(socketResult);
+		pthread_create(&thread, NULL, handleClient, &sD);
 
-			// Handle the client.
-			handleClient(sD);
+		pthread_join(thread, NULL);
 
-			// Close the client's socket in child after handling.
-			close(sD);
-			// Stop child process.
-			exit(EXIT_SUCCESS);
-		}
+		// // Duplicates the current process.
+		// if (fork() == 0) {
+		// 	// Listening socket is useless to this child.
+		// 	close(socketResult);
 
-		// Close the client's socket in parent.
-		close(sD);
+		// 	// Handle the client.
+		// 	handleClient(sD);
 
-		//https://linux.die.net/man/2/waitpid for WNOHANG def.
-		waitpid(-1, NULL, WNOHANG);
+		// 	// Close the client's socket in child after handling.
+		// 	close(sD);
+		// 	// Stop child process.
+		// 	exit(EXIT_SUCCESS);
+		// }
+
+		// // Close the client's socket in parent.
+		// close(sD);
+
+		// //https://linux.die.net/man/2/waitpid for WNOHANG def.
+		// waitpid(-1, NULL, WNOHANG);
 	}
 	return 0;
 }
