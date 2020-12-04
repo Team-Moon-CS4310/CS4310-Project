@@ -39,22 +39,29 @@ RequestInfo::RequestInfo(string head, int sD, string requestFileName) {
 	// Fill the request method.
 	if (match.compare("GET") == 0) {
 		method = GET;
+		nextMatch(0);
+		path = match;
 	} else if (match.compare("POST") == 0) {
 		method = POST;
-		contentLength = stoi(getHeader("Content-Length"));
-		boundary = getHeader("boundary");
-		fileName = getHeader("filename");
-		separateFile(requestFileName);
+		nextMatch(0);
+		path = match;
+		if (path.find("/delete") == string::npos) {
+			contentLength = stoi(getHeader("Content-Length"));
+			boundary = getHeader("boundary");
+			fileName = getHeader("filename");
+			separateFile(requestFileName);
+		}
 
 	} else if (match.compare("DELETE") == 0) {
 		method = DELETE;
+		nextMatch(0);
+		path = match;
 		fileName = getHeader("/files?");
 	} else if (match.compare("PUT") == 0) {
 		method = PUT;
+		nextMatch(0);
+		path = match;
 	}
-
-	nextMatch(0);
-	path = match;
 }
 
 RequestInfo::~RequestInfo() {

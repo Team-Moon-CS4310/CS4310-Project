@@ -75,6 +75,22 @@ int postRequest(RequestInfo info) {
 		// Pass the response info to be built and sent.
 		sendResponse(&reply);
 		remove(reply.filePath.c_str());
+	} else if (info.path.find("/delete") != string::npos) {
+		string fileName = info.path.substr(7, info.path.size());  // Extract the stuff after /file/
+		string pathName = "files/";	 // This is where our files are stored.
+		pathName.append(fileName);	// Make the full local path.
+
+		// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file-exists-in-c
+		ifstream check(pathName);
+		if (check.is_open()) {
+			reply.status = OK;
+			remove(pathName.c_str());
+		} else {
+			reply.status = NOT_FOUND;
+		}
+		reply.filePath = createHTML();
+		sendResponse(&reply);
+		remove(reply.filePath.c_str());
 	}
 
 	return 0;
@@ -87,23 +103,25 @@ int postRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int deleteRequest(RequestInfo info) {
-	filesystem::remove("files/" + info.fileName);
+	// string s = "files/";
+	// s.append(info.fileName);
+	// remove(s.c_str());
 
-	ResponseInfo reply(info.socketDescriptor);
-	info.path = "/";
-	cout << "DELETE" << info.path << endl;
-	reply.socketDescriptor = info.socketDescriptor;
-	
-	if (info.path.compare("/") == 0) {
-		// Set reply status.
-		reply.status = OK;
-		// Set file path to new html file
-		reply.filePath = createHTML();
-		// Pass the response info to be built and sent.
-		sendResponse(&reply);
-		remove(reply.filePath.c_str());
-	}
-	
+	// ResponseInfo reply(info.socketDescriptor);
+	// info.path = "/";
+	// cout << "DELETE " << info.path << endl;
+	// reply.socketDescriptor = info.socketDescriptor;
+
+	// if (info.path.compare("/") == 0) {
+	// 	// Set reply status.
+	// 	reply.status = OK;
+	// 	// Set file path to new html file
+	// 	reply.filePath = createHTML();
+	// 	// Pass the response info to be built and sent.
+	// 	sendResponse(&reply);
+	// 	remove(reply.filePath.c_str());
+	// }
+
 	return 0;
 }
 
@@ -132,12 +150,13 @@ string createHTML() {
 	myFile << "<head>\n<meta charset='utf-8'>\n<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n<title>Team Moon</title>\n<meta name='viewport' content='width=device-width, initial-scale=1'></head>\n";
 	myFile << "<body>\n<form action=\"\" method=\"post\" enctype=\"multipart/form-data\"><input type=\"file\" name=\"uploadfilevalue\" id=\"uploadfileid\"><input type=\"submit\" value=\"uploadfile\" name=\"submitfile\"> </form>\n";
 	myFile << "<h5>Uploaded Files</h5>";
+	myFile << "<iframe name=\"dontshowframe\" id=\"dontshowframe\" style=\"display: none;\"></iframe>";
 	myFile << "\n<ul>";
 	// Iterates through files and link with a button
-	for(auto& p: filesystem::directory_iterator("files")){
-		myFile << "\n<a href=" << p.path() << "><li><button type=\"button\">" << p.path().string().substr(6, p.path().string().length()) << "</button></li></a>\n";
-		myFile << "<form action=\"files\" method=\"get\">";
-		myFile <<    "<input type=\"submit\" value=\"Delete\" name=\"" << p.path().string().substr(6, p.path().string().length()) << "\">";
+	for (auto& p : filesystem::directory_iterator("files")) {
+		myFile << "\n<a href=" << p.path() << " target=\"_blank\"><li><button type=\"button\">" << p.path().string().substr(6, p.path().string().length()) << "</button></li></a>\n";
+		myFile << "<form action=\"delete/" << p.path().string().substr(6, p.path().string().length()) << "\" method=\"post\" target=\"dontshowframe\">";
+		myFile << "<input type=\"submit\">";
 		myFile << "</form>";
 	}
 	myFile << "</ul></body></html>";
