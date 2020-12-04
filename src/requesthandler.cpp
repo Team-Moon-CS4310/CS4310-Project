@@ -64,7 +64,7 @@ int getRequest(RequestInfo info) {
  */
 int postRequest(RequestInfo info) {
 	ResponseInfo reply(info.socketDescriptor);
-	cout << "POST" << info.path << endl;
+	cout << "POST: " << info.path << endl;
 	reply.socketDescriptor = info.socketDescriptor;
 
 	if (info.path.compare("/") == 0) {
@@ -84,7 +84,7 @@ int postRequest(RequestInfo info) {
 		ifstream check(pathName);
 		if (check.is_open()) {
 			reply.status = OK;
-			remove(pathName.c_str());
+			filesystem::remove(pathName.c_str());  // Delete the file.
 		} else {
 			reply.status = NOT_FOUND;
 		}
@@ -103,25 +103,6 @@ int postRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int deleteRequest(RequestInfo info) {
-	// string s = "files/";
-	// s.append(info.fileName);
-	// remove(s.c_str());
-
-	// ResponseInfo reply(info.socketDescriptor);
-	// info.path = "/";
-	// cout << "DELETE " << info.path << endl;
-	// reply.socketDescriptor = info.socketDescriptor;
-
-	// if (info.path.compare("/") == 0) {
-	// 	// Set reply status.
-	// 	reply.status = OK;
-	// 	// Set file path to new html file
-	// 	reply.filePath = createHTML();
-	// 	// Pass the response info to be built and sent.
-	// 	sendResponse(&reply);
-	// 	remove(reply.filePath.c_str());
-	// }
-
 	return 0;
 }
 
@@ -155,8 +136,8 @@ string createHTML() {
 	// Iterates through files and link with a button
 	for (auto& p : filesystem::directory_iterator("files")) {
 		myFile << "\n<a href=" << p.path() << " target=\"_blank\"><li><button type=\"button\">" << p.path().string().substr(6, p.path().string().length()) << "</button></li></a>\n";
-		myFile << "<form action=\"delete/" << p.path().string().substr(6, p.path().string().length()) << "\" method=\"post\" target=\"dontshowframe\">";
-		myFile << "<input type=\"submit\">";
+		myFile << "<form action=\"delete/" << p.path().string().substr(6, p.path().string().length()) << "\" method=\"post\" target=\"_self\">";
+		myFile << "<input value=\"Delete\" type=\"submit\">";
 		myFile << "</form>";
 	}
 	myFile << "</ul></body></html>";

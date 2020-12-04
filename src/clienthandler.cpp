@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 
@@ -70,7 +71,7 @@ int handleClient(int sD) {
 				header[i + recvtotal] = buffer[i];
 			}
 		}
-		
+
 		recvtotal += received;
 
 		ready = select(sD + 1, &sDset, NULL, NULL, &tv);
@@ -102,7 +103,7 @@ int handleClient(int sD) {
 	}
 	// Remove the request file for this specific client.
 	cout << "removing " << fileName << endl;
-	remove(fileName.c_str());
+	filesystem::remove(fileName);
 
 	cerr << "Done with client\n";
 	return 0;
