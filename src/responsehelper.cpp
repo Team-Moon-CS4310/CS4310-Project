@@ -27,18 +27,15 @@ int sendResponse(ResponseInfo* reply) {
 	}
 
 	// Only send a file if the path has been set.
+	char buffer[2048 * 2];
 	if (!reply->filePath.empty()) {
-		printColor(GREEN, "Sending file response.");
 		fstream filestream(reply->filePath);
-		cout << "filename: " << reply->filePath << endl;
 		string line;
-		while (getline(filestream, line)) {
-			printColor(GREEN, "Sending file response1.");
-			line.append("\n");	// Again, this can't be right, but it works for multiple files somehow.
-			cout << "line size: " << line.size();
-			s = send(reply->socketDescriptor, line.c_str(), line.size(), 0);
+
+		while (!filestream.eof()) {
+			filestream.read(buffer, sizeof(buffer));
+			s = send(reply->socketDescriptor, buffer, sizeof(buffer), 0);
 			if (s == -1) {
-				printColor(RED, "Failed to send body!");
 				perror("sendResponse");
 			}
 		}

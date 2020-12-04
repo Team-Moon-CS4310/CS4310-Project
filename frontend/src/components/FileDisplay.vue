@@ -1,9 +1,10 @@
 <template>
   <div>
+    <h1>testtext</h1>
     <b-list-group>
     <b-list-group-item v-for="(file, index) in files"
     :key="index">
-    <b-button :href="'/files/'+file" class="float-right" style="background: #0d3103;">{{file}}</b-button>
+    <b-button :href="'/file/'+file">{{file}}</b-button>
     </b-list-group-item>
   </b-list-group>
   </div>
@@ -16,8 +17,20 @@ export default {
   name: 'FileDisplay',
   data () {
     return {
-      files: FileService.getFiles()
+      files: ['LOADING...']
     }
+  },
+  methods: {
+    getFiles () {
+      FileService.getFiles().then(response => {
+        this.files = response.data
+      }).catch(e => {
+        console.log(e)
+      })
+    }
+  },
+  mounted () {
+    this.getFiles()
   }
 }
 </script>

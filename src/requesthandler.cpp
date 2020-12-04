@@ -38,16 +38,21 @@ int getRequest(RequestInfo info) {
 		// Set reply status.
 		reply.status = OK;
 		// Set file path to new html file
-		reply.filePath = createHTML();
+		reply.contentType = HTML;
+		reply.filePath = "res/index.html";
 		// Pass the response info to be built and sent.
 		sendResponse(&reply);
-		remove(reply.filePath.c_str());
 	} else if (info.path.compare("/favicon.ico") == 0) {
 		reply.status = NOT_FOUND;
 		sendResponse(&reply);
 	} else if (existsIn(info.path, "/css") || existsIn(info.path, "/js")) {
 		string pathName = "res";  // This is where our static files are stored.
 		pathName.append(info.path);	 // Make the full local path.
+		if (existsIn(info.path, "/css")) {
+			reply.contentType = CSS;
+		} else {
+			reply.contentType = JS;
+		}
 
 		// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file-exists-in-c
 		ifstream check(pathName);
@@ -80,6 +85,7 @@ int getRequest(RequestInfo info) {
 			arr.push_back(p.path().filename());
 		}
 		reply.status = OK;
+		reply.contentType = JSON;
 		reply.filePath = toJSON(arr);
 		sendResponse(&reply);
 		remove(reply.filePath.c_str());

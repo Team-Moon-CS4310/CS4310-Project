@@ -33,12 +33,34 @@ string ResponseInfo::buildHeader() {
 		result.append("418 I'm a teapot");	// Short and stout.
 		break;
 	}
-	if (!this->filePath.empty() && filePath.find("/file") != string::npos) {
+	if (!this->filePath.empty()) {
 		result.append("\r\n");
 		result.append("Content-Length: ");
 		filesystem::path p{this->filePath};
 		result.append(to_string(filesystem::file_size(p)));
 	}
+	result.append("\r\nConnection: close");	 // Decline the Connection: keep-alive if exists. TODO accept keep-alive connections.
+
+	switch (this->contentType) {
+	case UNDEFINED:
+		cout << "undefined content header" << endl;
+		break;
+	case JSON:
+		result.append("\r\nContent-Type: application/json");
+		break;
+	case HTML:
+		result.append("\r\nContent-Type: text/html");
+		break;
+	case JS:
+		result.append("\r\nContent-Type: text/javascript");
+		break;
+	case CSS:
+		result.append("\r\nContent-Type: text/css");
+		break;
+	default:
+		break;
+	}
+
 	result.append("\r\n");
 	result.append("\r\n");
 
@@ -52,6 +74,7 @@ string ResponseInfo::buildHeader() {
  */
 ResponseInfo::ResponseInfo(int socketDescriptor) {
 	this->socketDescriptor = socketDescriptor;
+	this->contentType = UNDEFINED;
 }
 
 ResponseInfo::~ResponseInfo() {
