@@ -33,7 +33,7 @@ string ResponseInfo::buildHeader() {
 		result.append("418 I'm a teapot");	// Short and stout.
 		break;
 	}
-	if (!this->filePath.empty()) {
+	if (!this->filePath.empty() && filePath.find("/file") != string::npos) {
 		result.append("\r\n");
 		result.append("Content-Length: ");
 		filesystem::path p{this->filePath};

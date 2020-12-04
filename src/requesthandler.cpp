@@ -4,15 +4,18 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <regex>
 
+#include "colors.hpp"
 #include "requestinfo.hpp"
 #include "responsehelper.hpp"
-#include "colors.hpp"
 
 using namespace std;
 
 string createHTML();
+bool existsIn(string base, string looking);
+string toJSON(list<string> arr);
 
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages for response.
 // Want to return base html page.
@@ -42,8 +45,23 @@ int getRequest(RequestInfo info) {
 	} else if (info.path.compare("/favicon.ico") == 0) {
 		reply.status = NOT_FOUND;
 		sendResponse(&reply);
-	} else if (info.path.find("/files") != string::npos) {
-		string fileName = info.path.substr(6, info.path.size());  // Extract the stuff after /file/
+	} else if (existsIn(info.path, "/css") || existsIn(info.path, "/js")) {
+		string pathName = "res";  // This is where our static files are stored.
+		pathName.append(info.path);	 // Make the full local path.
+
+		// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file-exists-in-c
+		ifstream check(pathName);
+		if (check.is_open()) {
+			reply.status = OK;
+			reply.filePath = pathName;
+			cout << "sending res file" << endl;
+		} else {
+			reply.status = NOT_FOUND;
+		}
+		sendResponse(&reply);
+
+	} else if (existsIn(info.path, "/file")) {
+		string fileName = info.path.substr(5, info.path.size());  // Extract the stuff after /file/
 		string pathName = "files/";	 // This is where our files are stored.
 		pathName.append(fileName);	// Make the full local path.
 
@@ -56,9 +74,48 @@ int getRequest(RequestInfo info) {
 			reply.status = NOT_FOUND;
 		}
 		sendResponse(&reply);
+	} else if (existsIn(info.path, "/getAllFiles")) {
+		list<string> arr;
+		for (auto& p : filesystem::directory_iterator("files")) {
+			arr.push_back(p.path().filename());
+		}
+		reply.status = OK;
+		reply.filePath = toJSON(arr);
+		sendResponse(&reply);
+		remove(reply.filePath.c_str());
 	}
 
 	return 0;
+}
+
+string toJSON(list<string> arr) {
+	string output = "[";
+	int size = arr.size();
+	int i = 0;
+	for (string s : arr) {
+		if (i == size - 1) {
+			output.append("\"").append(s).append("\"");
+		} else {
+			output.append("\"").append(s).append("\"").append(",");
+		}
+		i++;
+	}
+	output.append("]");
+
+	string fileName = "binaries/response";
+	// Sets unique response html file name.
+	fileName.append(to_string(pthread_self()));
+	fileName.append(".json");
+	// Write to html file (Thanks to https://stackoverflow.com/questions/11206604/create-html-reports-using-c)
+	ofstream myFile;
+	myFile.open(fileName);
+	myFile << output;
+	myFile.close();
+	return fileName;
+}
+
+bool existsIn(string base, string looking) {
+	return (base.find(looking) != string::npos);
 }
 
 /**

@@ -31,6 +31,7 @@ void *handleClient(void *void_sD) {
 	// 1024 should be enough bytes for the header.
 
 	int sD = *(int *)void_sD;
+	cout << "void sD: " << sD << endl;
 	char *header = new char[1024];
 	int recvtotal = 0;
 	char buffer[1024];
@@ -81,8 +82,7 @@ void *handleClient(void *void_sD) {
 	delete[] header;
 	RequestInfo info(str, sD, fileName);
 
-	// Remove the request file for this specific client.
-	filesystem::remove(fileName);
+	
 
 	switch (info.method) {
 	case GET:
@@ -105,6 +105,9 @@ void *handleClient(void *void_sD) {
 
 	string s = "Done with client ";
 	s.append(to_string((long)pthread_self()));
+
+	// Remove the request file for this specific client.
+	remove(fileName.c_str());
 
 	printColor(RED, s.c_str());
 	return NULL;

@@ -98,6 +98,8 @@ int main(int argc, char const *argv[]) {
 			continue;
 		}
 
+		std::cout << "Actual sD: " << sD << std::endl;
+
 		pthread_create(&thread, NULL, handleClient, &sD);
 
 		pthread_join(thread, NULL);

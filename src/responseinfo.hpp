@@ -16,6 +16,7 @@ private:
 public:
 	HttpStatus status;
 	std::string filePath;
+	std::string contentType;
 
 	int socketDescriptor;
 
