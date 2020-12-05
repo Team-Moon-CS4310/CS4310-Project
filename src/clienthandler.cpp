@@ -31,7 +31,6 @@ void *handleClient(void *void_sD) {
 	// 1024 should be enough bytes for the header.
 
 	int sD = *(int *)void_sD;
-	cout << "void sD: " << sD << endl;
 	char *header = new char[1024];
 	int recvtotal = 0;
 	char buffer[1024];

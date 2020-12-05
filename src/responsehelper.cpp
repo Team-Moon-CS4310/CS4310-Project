@@ -30,8 +30,6 @@ int sendResponse(ResponseInfo* reply) {
 	char buffer[2048 * 2];
 	if (!reply->filePath.empty()) {
 		fstream filestream(reply->filePath);
-		string line;
-
 		while (!filestream.eof()) {
 			filestream.read(buffer, sizeof(buffer));
 			s = send(reply->socketDescriptor, buffer, sizeof(buffer), 0);

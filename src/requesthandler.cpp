@@ -16,6 +16,7 @@ using namespace std;
 string createHTML();
 bool existsIn(string base, string looking);
 string toJSON(list<string> arr);
+string getCurrentFileResponse();
 
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages for response.
 // Want to return base html page.
@@ -32,7 +33,6 @@ int getRequest(RequestInfo info) {
 	printColor(BLUE, s.c_str());
 
 	ResponseInfo reply(info.socketDescriptor);
-	reply.socketDescriptor = info.socketDescriptor;
 
 	if (info.path.compare("/") == 0) {
 		// Set reply status.
@@ -80,48 +80,15 @@ int getRequest(RequestInfo info) {
 		}
 		sendResponse(&reply);
 	} else if (existsIn(info.path, "/getAllFiles")) {
-		list<string> arr;
-		for (auto& p : filesystem::directory_iterator("files")) {
-			arr.push_back(p.path().filename());
-		}
+
 		reply.status = OK;
 		reply.contentType = JSON;
-		reply.filePath = toJSON(arr);
+		reply.filePath = getCurrentFileResponse();
 		sendResponse(&reply);
 		remove(reply.filePath.c_str());
 	}
 
 	return 0;
-}
-
-string toJSON(list<string> arr) {
-	string output = "[";
-	int size = arr.size();
-	int i = 0;
-	for (string s : arr) {
-		if (i == size - 1) {
-			output.append("\"").append(s).append("\"");
-		} else {
-			output.append("\"").append(s).append("\"").append(",");
-		}
-		i++;
-	}
-	output.append("]");
-
-	string fileName = "binaries/response";
-	// Sets unique response html file name.
-	fileName.append(to_string(pthread_self()));
-	fileName.append(".json");
-	// Write to html file (Thanks to https://stackoverflow.com/questions/11206604/create-html-reports-using-c)
-	ofstream myFile;
-	myFile.open(fileName);
-	myFile << output;
-	myFile.close();
-	return fileName;
-}
-
-bool existsIn(string base, string looking) {
-	return (base.find(looking) != string::npos);
 }
 
 /**
@@ -137,30 +104,12 @@ int postRequest(RequestInfo info) {
 	printColor(BLUE, s.c_str());
 
 	ResponseInfo reply(info.socketDescriptor);
-	reply.socketDescriptor = info.socketDescriptor;
 
-	if (info.path.compare("/") == 0) {
-		// Set reply status.
+	if (info.path.compare("/upload") == 0) {
 		reply.status = OK;
-		// Set file path to new html file
-		reply.filePath = createHTML();
-		// Pass the response info to be built and sent.
-		sendResponse(&reply);
-		remove(reply.filePath.c_str());
-	} else if (info.path.find("/delete") != string::npos) {
-		string fileName = info.path.substr(7, info.path.size());  // Extract the stuff after /file/
-		string pathName = "files/";	 // This is where our files are stored.
-		pathName.append(fileName);	// Make the full local path.
-
-		// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file-exists-in-c
-		ifstream check(pathName);
-		if (check.is_open()) {
-			reply.status = OK;
-			filesystem::remove(pathName.c_str());  // Delete the file.
-		} else {
-			reply.status = NOT_FOUND;
-		}
-		reply.filePath = createHTML();
+		// Send back the current existing files.
+		reply.contentType = JSON;
+		reply.filePath = getCurrentFileResponse();
 		sendResponse(&reply);
 		remove(reply.filePath.c_str());
 	}
@@ -175,6 +124,30 @@ int postRequest(RequestInfo info) {
  * @return int whether the send response succeeded.
  */
 int deleteRequest(RequestInfo info) {
+	// Print diagnostic stuff.
+	string s = "DELETE: '";
+	s.append(info.path).append("' CLIENT: ").append(to_string(pthread_self()));
+	printColor(BLUE, s.c_str());
+
+	ResponseInfo reply(info.socketDescriptor);
+
+	string pathName = "files/";	 // This is where our files are stored.
+	pathName.append(info.path);	 // Make the full local path.
+
+	// Thanks to https://stackoverflow.com/questions/59022814/how-to-check-if-a-file-exists-in-c
+	ifstream check(pathName);
+	if (check.is_open()) {
+		reply.status = OK;
+		filesystem::remove(pathName.c_str());  // Delete the file.
+	} else {
+		reply.status = NOT_FOUND;
+	}
+
+	// Send back the current existing files.
+	reply.contentType = JSON;
+	reply.filePath = getCurrentFileResponse();
+	sendResponse(&reply);
+	remove(reply.filePath.c_str());
 	return 0;
 }
 
@@ -215,4 +188,42 @@ string createHTML() {
 	myFile.close();
 	// Return HTML file path
 	return fileName;
+}
+
+string toJSON(list<string> arr) {
+	string output = "[";
+	int size = arr.size();
+	int i = 0;
+	for (string s : arr) {
+		if (i == size - 1) {
+			output.append("\"").append(s).append("\"");
+		} else {
+			output.append("\"").append(s).append("\"").append(",");
+		}
+		i++;
+	}
+	output.append("]");
+
+	string fileName = "binaries/response";
+	// Sets unique response html file name.
+	fileName.append(to_string(pthread_self()));
+	fileName.append(".json");
+	// Write to html file (Thanks to https://stackoverflow.com/questions/11206604/create-html-reports-using-c)
+	ofstream myFile;
+	myFile.open(fileName);
+	myFile << output;
+	myFile.close();
+	return fileName;
+}
+
+bool existsIn(string base, string looking) {
+	return (base.find(looking) != string::npos);
+}
+
+string getCurrentFileResponse() {
+	list<string> arr;
+	for (auto& p : filesystem::directory_iterator("files")) {
+		arr.push_back(p.path().filename());
+	}
+	return toJSON(arr);
 }

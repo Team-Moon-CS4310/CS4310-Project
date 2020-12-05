@@ -43,7 +43,6 @@ string ResponseInfo::buildHeader() {
 
 	switch (this->contentType) {
 	case UNDEFINED:
-		cout << "undefined content header" << endl;
 		break;
 	case JSON:
 		result.append("\r\nContent-Type: application/json");

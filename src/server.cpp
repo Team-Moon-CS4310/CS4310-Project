@@ -98,31 +98,9 @@ int main(int argc, char const *argv[]) {
 			continue;
 		}
 
-		std::cout << "Actual sD: " << sD << std::endl;
-
 		pthread_create(&thread, NULL, handleClient, &sD);
 
 		pthread_join(thread, NULL);
-
-		// // Duplicates the current process.
-		// if (fork() == 0) {
-		// 	// Listening socket is useless to this child.
-		// 	close(socketResult);
-
-		// 	// Handle the client.
-		// 	handleClient(sD);
-
-		// 	// Close the client's socket in child after handling.
-		// 	close(sD);
-		// 	// Stop child process.
-		// 	exit(EXIT_SUCCESS);
-		// }
-
-		// // Close the client's socket in parent.
-		// close(sD);
-
-		// //https://linux.die.net/man/2/waitpid for WNOHANG def.
-		// waitpid(-1, NULL, WNOHANG);
 	}
 	return 0;
 }
