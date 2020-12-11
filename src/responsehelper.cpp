@@ -10,7 +10,7 @@
 
 #include "colors.hpp"
 using namespace std;
-
+pthread_mutex_t lock;
 /**
  * @brief Sends the response to the client via the socketDescriptor in the ResponseInfo reply.
  * 
@@ -27,6 +27,7 @@ int sendResponse(ResponseInfo* reply) {
 	}
 
 	// Only send a file if the path has been set.
+	pthread_mutex_lock(&lock);
 	char buffer[2048 * 2];
 	if (!reply->filePath.empty()) {
 		fstream filestream(reply->filePath);
@@ -38,6 +39,7 @@ int sendResponse(ResponseInfo* reply) {
 			}
 		}
 	}
+	pthread_mutex_unlock(&lock);
 
 	return 0;
 }

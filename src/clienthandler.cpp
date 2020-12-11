@@ -109,5 +109,6 @@ void *handleClient(void *void_sD) {
 	remove(fileName.c_str());
 
 	printColor(RED, s.c_str());
+	close(sD);
 	return NULL;
 }

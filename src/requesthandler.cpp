@@ -12,6 +12,7 @@
 #include "responsehelper.hpp"
 
 using namespace std;
+extern pthread_mutex_t lock;
 
 string createHTML();
 bool existsIn(string base, string looking);
@@ -59,7 +60,6 @@ int getRequest(RequestInfo info) {
 		if (check.is_open()) {
 			reply.status = OK;
 			reply.filePath = pathName;
-			cout << "sending res file" << endl;
 		} else {
 			reply.status = NOT_FOUND;
 		}
@@ -138,7 +138,9 @@ int deleteRequest(RequestInfo info) {
 	ifstream check(pathName);
 	if (check.is_open()) {
 		reply.status = OK;
+		pthread_mutex_lock(&lock);
 		filesystem::remove(pathName.c_str());  // Delete the file.
+		pthread_mutex_unlock(&lock);
 	} else {
 		reply.status = NOT_FOUND;
 	}

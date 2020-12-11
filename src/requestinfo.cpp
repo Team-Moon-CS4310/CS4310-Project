@@ -4,8 +4,6 @@
 #include <iostream>
 #include <regex>
 
-static pthread_mutex_t lock;
-
 using namespace std;
 
 /**
@@ -47,15 +45,6 @@ RequestInfo::RequestInfo(string head, int sD, string requestFileName) {
 		method = POST;
 		nextMatch(0);
 		path = match;
-		if (path.find("/delete") == string::npos) {
-			contentLength = stoi(getHeader("Content-Length"));
-			boundary = getHeader("boundary");
-			fileName = getHeader("filename");
-			pthread_mutex_lock(&lock);
-			separateFile(requestFileName);
-			pthread_mutex_unlock(&lock);
-		}
-
 	} else if (match.compare("DELETE") == 0) {
 		method = DELETE;
 		nextMatch(0);

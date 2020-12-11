@@ -99,7 +99,7 @@ int main(int argc, char const *argv[]) {
 		}
 
 		pthread_create(&thread, NULL, handleClient, &sD);
-
+		
 		pthread_join(thread, NULL);
 	}
 	return 0;
