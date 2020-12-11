@@ -36,6 +36,11 @@ $(BIN)/responseinfo.o: src/responseinfo.hpp src/responseinfo.cpp
 $(BIN)/colors.o: src/colors.hpp src/colors.cpp
 	$(CC) $(CFLAGS) -c src/colors.cpp -o $(BIN)/colors.o
 
+frontend:
+	cd frontend
+	npm run build
+	rm -r ../res/*
+	cp -r dist/* ../res/
 
 clean:
 	rm $(BIN)/*.o
